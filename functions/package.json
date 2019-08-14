@@ -1,0 +1,32 @@
+{
+  "name": "big-eye",
+  "description": "Google Analytics Scheduler for JSMonday",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "10"
+  },
+  "dependencies": {
+    "body-parser": "1.19.0",
+    "cors": "2.8.5",
+    "dotenv": "8.0.0",
+    "express": "4.17.1",
+    "firebase-admin": "8.0.0",
+    "firebase-functions": "3.1.0",
+    "googleapis": "42.0.0",
+    "md5": "2.2.1",
+    "moment": "2.24.0"
+  },
+  "devDependencies": {
+    "eslint": "5.12.0",
+    "eslint-plugin-promise": "4.0.1",
+    "firebase-functions-test": "0.1.6"
+  },
+  "private": false
+}

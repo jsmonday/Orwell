@@ -1,0 +1,4 @@
+node_modules/
+.env
+keys.json
+src/lib/firebase/firebase.json
