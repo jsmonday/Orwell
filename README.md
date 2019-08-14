@@ -1,5 +1,5 @@
 <img src="/docs/bigeye.png" />
 
-<br /> <br />
+<br />
 
-**BigEye** is a serverless service which periodically stores Google Analytica data inside Firebase using Google Cloud Functions.
+**BigEye** is a serverless service which periodically stores Google Analytics data inside Firebase using Google Cloud Functions.
