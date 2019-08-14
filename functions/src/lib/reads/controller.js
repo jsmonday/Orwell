@@ -14,13 +14,12 @@ const jwt       = new google.auth.JWT(
   scopes
 );
 
-async function getArticleReads(req, res) {
+async function updateArticleReads(req, res) {
 
-  if (!req.body.token) 
-    return res.status(401).json({ success: false, data: 'Missing required token' });
-
-  if (req.body.token !== process.env.UPDATE_TOKEN) 
+  if (!req.query || req.query.token !== process.env.UPDATE_TOKEN) {
+    console.log("Unauthorized request. Aborting.");
     return res.status(401).json({ success: false, data: 'Invalid token' });
+  }
 
   const reports = {
     reportRequests: [
@@ -84,7 +83,6 @@ async function getArticleReads(req, res) {
       }
       
       if (/^\/articles\/.*/.test(row.dimensions[0])) {
-        console.log(JSON.stringify(row, null, 2))
         // eslint-disable-next-line no-await-in-loop
         await analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc)
       }
@@ -105,6 +103,43 @@ async function getArticleReads(req, res) {
 
 }
 
+async function getArticleReads(req, res) {
+
+  if (!req.query || req.query.token !== process.env.UPDATE_TOKEN) {
+    console.log("Unauthorized request. Aborting.");
+    return res.status(401).json({ success: false, data: 'Invalid token' });
+  }
+
+  const date      = req.query.date || moment().format('DD-MM-YYYY');
+  const articleId = req.params.articleId;
+
+  try {
+
+    const doc = await analytics.doc("articleReads").collection(date).doc(articleId).get();
+
+    if (!doc.exists) {
+      res.status(404).json({
+        success: false,
+        data: "Article does not exists"
+      })
+    }
+
+    res.json({
+      success: true,
+      data: doc.data()
+    })
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      data: err
+    })
+  }
+
+}
+
 module.exports = {
+  updateArticleReads,
   getArticleReads
 }
