@@ -1,6 +1,7 @@
 const { google }    = require('googleapis');
 const moment        = require('moment');
 const account       = require('../keys/keys.json');
+const strapi        = require('../strapi');
 const { analytics } = require('../firebase')
                       require('dotenv').config();
 
@@ -67,8 +68,11 @@ async function updateArticleReads(req, res) {
       resource: reports
     });
 
-    const rows = data.data.reports[0].data.rows;
+    const rows              = data.data.reports[0].data.rows;
     const currentCollection = moment().format('DD-MM-YYYY');
+    const strapiJwt         = await strapi.getJWT();
+
+    let changedUris = {};
 
     for (let row of rows) {
       const docId    = row.dimensions[0].match(/\d*$/)[0];
@@ -78,19 +82,32 @@ async function updateArticleReads(req, res) {
         uniquePageViews: parseInt(row.metrics[0].values[0]),
         totalPageViews:  parseInt(row.metrics[0].values[1]),
         timeOnPage:      parseFloat(row.metrics[0].values[2]),
-        avgTimeOnPage:      parseFloat(row.metrics[0].values[3]),
+        avgTimeOnPage:   parseFloat(row.metrics[0].values[3]),
         referrer
       }
-      
+
       if (/^\/articles\/.*/.test(row.dimensions[0])) {
+
+        let reads = parseInt(row.metrics[0].values[0]);
+        
+        if (docId in changedUris) {
+          reads += changedUris[docId];
+        } else {
+          changedUris[docId] = reads
+        }
+
         // eslint-disable-next-line no-await-in-loop
-        await analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc)
+        await Promise.all([
+          analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc),
+          strapi.updateArticleReads(strapiJwt, docId, reads)
+        ]);
+
       }
     }
 
     res.json({
       success: true,
-      data: 'Database successfully updated'
+      data: 'Database and Strapi successfully updated'
     });
 
   } catch (err) {
