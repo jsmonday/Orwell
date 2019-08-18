@@ -75,32 +75,38 @@ async function updateArticleReads(req, res) {
     let changedUris = {};
 
     for (let row of rows) {
-      const docId    = row.dimensions[0].match(/\d*$/)[0];
-      const referrer = row.dimensions[1]; 
-      const doc = {
-        date:            new Date(),
-        uniquePageViews: parseInt(row.metrics[0].values[0]),
-        totalPageViews:  parseInt(row.metrics[0].values[1]),
-        timeOnPage:      parseFloat(row.metrics[0].values[2]),
-        avgTimeOnPage:   parseFloat(row.metrics[0].values[3]),
-        referrer
-      }
+      const path = row.dimensions[0];
+      // Get only articles
+      if (/^\/articles\/.*/.test(path)) {
 
-      if (/^\/articles\/.*/.test(row.dimensions[0])) {
+        // Get only articles with correct url
+        if (/^\/articles\/\d*\/.+/.test(path)) {
 
-        let reads = parseInt(row.metrics[0].values[0]);
-        
-        if (docId in changedUris) {
-          reads += changedUris[docId];
-        } else {
-          changedUris[docId] = reads
+          const docId    = row.dimensions[0].match(/\d{1,}/)[0];
+          const referrer = row.dimensions[1]; 
+          const doc = {
+            date:            new Date(),
+            uniquePageViews: parseInt(row.metrics[0].values[0]),
+            totalPageViews:  parseInt(row.metrics[0].values[1]),
+            timeOnPage:      parseFloat(row.metrics[0].values[2]),
+            avgTimeOnPage:   parseFloat(row.metrics[0].values[3]),
+            referrer
+          }
+
+          let reads = parseInt(row.metrics[0].values[0]);
+          
+          if (docId in changedUris) {
+            reads += changedUris[docId];
+          } else {
+            changedUris[docId] = reads
+          }
+          
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all([
+            analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc),
+            strapi.updateArticleReads(strapiJwt, docId, reads)
+          ]);
         }
-
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all([
-          analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc),
-          strapi.updateArticleReads(strapiJwt, docId, reads)
-        ]);
 
       }
     }

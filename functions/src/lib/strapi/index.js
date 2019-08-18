@@ -1,18 +1,18 @@
 const axios     = require("axios");
+const Strapi    = require("strapi-sdk-javascript").default;
                   require("dotenv").config();
 const endpoint  = process.env.JSM_ENDPOINT;
+
+const strapi = new Strapi(endpoint);
 
 async function getJWT() {
   try {
 
-    const { data: { jwt }} = await axios.post(`${endpoint}/auth/local`, {
-      identifier: process.env.JSM_USERNAME,
-      password:   process.env.JSM_PASSWORD
-    });
-
+    const { jwt } = await strapi.login(process.env.JSM_USERNAME, process.env.JSM_PASSWORD);
     return jwt;
 
   } catch (err) {
+    console.log(err)
     console.log("Unable to get JWT");
   }
 }
