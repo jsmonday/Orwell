@@ -93,7 +93,7 @@ async function updateArticleReads(req, res) {
             referrer
           }
 
-          let reads = parseInt(row.metrics[0].values[0]);
+          let reads = parseInt(row.metrics[0].values[1]);
           
           if (docId in changedUris) {
             reads += changedUris[docId];
