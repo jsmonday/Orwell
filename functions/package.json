@@ -1,5 +1,5 @@
 {
-  "name": "big-eye",
+  "name": "orwell",
   "description": "Google Analytics Scheduler for JSMonday",
   "scripts": {
     "lint": "eslint .",

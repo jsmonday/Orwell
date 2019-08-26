@@ -77,10 +77,10 @@ async function updateArticleReads(req, res) {
     for (let row of rows) {
       const path = row.dimensions[0];
       // Get only articles
-      if (/^\/articles\/.*/.test(path)) {
+      if (/\/articles\/.*/.test(path)) {
 
         // Get only articles with correct url
-        if (/^\/articles\/\d*\/.+/.test(path)) {
+        if (/\/articles\/\d*\/.+/.test(path)) {
 
           const docId    = row.dimensions[0].match(/\d{1,}/)[0];
           const referrer = row.dimensions[1]; 
@@ -94,21 +94,26 @@ async function updateArticleReads(req, res) {
           }
 
           let reads = parseInt(row.metrics[0].values[1]);
-          
+
           if (docId in changedUris) {
-            reads += changedUris[docId];
+            changedUris[docId] += reads;
           } else {
             changedUris[docId] = reads
           }
-          
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all([
-            analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc),
-            strapi.updateArticleReads(strapiJwt, docId, reads)
-          ]);
         }
 
       }
+    }
+
+    for (let id in changedUris) {
+      const docId = id;
+      const reads = changedUris[id];
+
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all([
+        // analytics.doc("articleReads").collection(currentCollection).doc(docId).set(doc),
+        strapi.updateArticleReads(strapiJwt, docId, reads)
+      ]);
     }
 
     res.json({
