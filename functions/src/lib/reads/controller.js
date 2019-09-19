@@ -50,9 +50,9 @@ async function updateArticleReads(req, res) {
           {
             name: 'ga:pagePath'
           },
-          {
-            name: 'ga:fullReferrer'
-          }
+          // {
+          //   name: 'ga:fullReferrer'
+          // }
         ]
       }
     ]
@@ -94,6 +94,8 @@ async function updateArticleReads(req, res) {
           }
 
           let reads = parseInt(row.metrics[0].values[1]);
+
+          console.log(`DOC ${docId} -> ${reads}`)
 
           if (docId in changedUris) {
             changedUris[docId] += reads;
