@@ -108,6 +108,31 @@ async function updatePatronEvents(req, res) {
   }
 }
 
+async function getPatronEvents(req, res) {
+
+  if (!req.query || req.query.token !== process.env.UPDATE_TOKEN) {
+    console.log("Unauthorized request. Aborting.");
+    return res.status(401).json({ success: false, data: 'Invalid token' });
+  }
+
+  try {
+    
+    let docs = [];
+
+    const snapshot = await analytics.doc("events").collection(req.params.patron).get()
+
+    snapshot.forEach(doc => docs.push({ [doc.id]: doc.data() }));
+
+    res.json(docs);
+
+  } catch (err) {
+    console.log(err);
+    res.json({error: "f**k"});
+  }
+
+}
+
 module.exports = {
-  updatePatronEvents
+  updatePatronEvents,
+  getPatronEvents
 }
