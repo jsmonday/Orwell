@@ -75,36 +75,41 @@ async function updateArticleReads(req, res) {
     let changedUris = {};
 
     for (let row of rows) {
-      const path = row.dimensions[0];
-      // Get only articles
-      if (/\/articles\/.*/.test(path)) {
+      
+      if (row.dimensions && row.dimensions.length) {
+        const path = row.dimensions[0];
 
-        // Get only articles with correct url
-        if (/\/articles\/\d*\/.+/.test(path)) {
-
-          const docId    = row.dimensions[0].match(/\d{1,}/)[0];
-          const referrer = row.dimensions[1]; 
-          const doc = {
-            date:            new Date(),
-            uniquePageViews: parseInt(row.metrics[0].values[0]),
-            totalPageViews:  parseInt(row.metrics[0].values[1]),
-            timeOnPage:      parseFloat(row.metrics[0].values[2]),
-            avgTimeOnPage:   parseFloat(row.metrics[0].values[3]),
-            referrer
+        // Get only articles
+        if (/\/articles\/.*/.test(path)) {
+  
+          // Get only articles with correct url
+          if (/\/articles\/[0-9]+\/.+/.test(path)) {
+            console.log(row.dimensions[0])
+            const docId    = row.dimensions[0].match(/\d{1,}/)[0];
+            const referrer = row.dimensions[1]; 
+            const doc = {
+              date:            new Date(),
+              uniquePageViews: parseInt(row.metrics[0].values[0]),
+              totalPageViews:  parseInt(row.metrics[0].values[1]),
+              timeOnPage:      parseFloat(row.metrics[0].values[2]),
+              avgTimeOnPage:   parseFloat(row.metrics[0].values[3]),
+              referrer
+            }
+  
+            let reads = parseInt(row.metrics[0].values[1]);
+  
+            console.log(`DOC ${docId} -> ${reads}`)
+  
+            if (docId in changedUris) {
+              changedUris[docId] += reads;
+            } else {
+              changedUris[docId] = reads
+            }
           }
-
-          let reads = parseInt(row.metrics[0].values[1]);
-
-          console.log(`DOC ${docId} -> ${reads}`)
-
-          if (docId in changedUris) {
-            changedUris[docId] += reads;
-          } else {
-            changedUris[docId] = reads
-          }
+  
         }
-
       }
+
     }
 
     for (let id in changedUris) {
